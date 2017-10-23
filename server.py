@@ -4,6 +4,7 @@
 Clase (y programa principal) para un servidor de eco en UDP simple
 """
 
+import json
 import socketserver
 import sys
 
@@ -17,6 +18,10 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
     Echo server class
     """
     dic = {}
+    
+    def register2json(self):
+        json.dump(self.dic, open('registered.json', "w"))
+    
     def handle(self):
         """
         handle method of the server class
@@ -33,6 +38,10 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                         del self.dic[user]
             print(line.decode('utf-8'), end='')
         print(self.dic)
+        self.register2json()
+    
+    
+
 
 if __name__ == "__main__":
     # Listens at localhost ('') port 6001 
