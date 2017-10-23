@@ -13,14 +13,16 @@ if len(sys.argv) < 4:
 
 SERVER = sys.argv[1]
 PORT = int(sys.argv[2])
-LINE = ' '.join(sys.argv[3:])
+LINE = ' '.join(sys.argv[4:])
 
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
 # socket.sock_dgram es udp / af_inet es internet, ip
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
     my_socket.connect((SERVER, PORT))
     print("Enviando:", LINE)
-    my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
+    if sys.argv[3] == 'register':
+        my_socket.send(bytes('REGISTER sip:'+LINE+' SIP/2.0\r\n\r\n',
+                              'utf-8') + b'\r\n')
     data = my_socket.recv(1024)
     print('Recibido -- ', data.decode('utf-8'))
 
