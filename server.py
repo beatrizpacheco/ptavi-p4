@@ -28,7 +28,10 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 if line.decode('utf-8')[:8] == 'REGISTER':
                     user = line.decode('utf-8')[13:-10]
                     self.dic[user] = self.client_address[0]
-                    print("El cliente nos manda:", line.decode('utf-8'))
+                elif line.decode('utf-8')[:7] == 'Expires':
+                    if line.decode('utf-8').split(' ')[1][0] == '0':
+                        del self.dic[user]
+            print(line.decode('utf-8'), end='')
         print(self.dic)
 
 if __name__ == "__main__":
