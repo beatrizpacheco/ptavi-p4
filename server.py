@@ -61,7 +61,6 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         print(self.dic)
         self.register2json()
 
-
 if __name__ == "__main__":
     serv = socketserver.UDPServer(('', PORT), SIPRegisterHandler)
     print("Lanzando servidor UDP de eco...")
