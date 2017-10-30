@@ -66,11 +66,11 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                 ip_address = self.client_address[0]
             if message and message[0] == 'Expires:':
                 if message[1] != '0':
-                    Expire = time.strftime('%Y-%m-%d %H:%M:%S',
+                    expire = time.strftime('%Y-%m-%d %H:%M:%S',
                                            time.gmtime(time.time() +
                                                        int(message[1])))
                     self.dic_users[user] = ['address: ' + ip_address,
-                                      'expires: ' +  Expire]
+                                      'expires: ' +  expire]
                     self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                 elif message[1] == '0':
                     try:
