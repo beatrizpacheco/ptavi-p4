@@ -8,7 +8,7 @@ import json
 import socketserver
 import sys
 import time
-from time import gmtime, strftime
+#from time import gmtime, strftime
 
 if len(sys.argv) != 2:
     sys.exit("Usage: python3 server.py puerto")
@@ -29,7 +29,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
             with open('registered.json', 'r') as fich:
                 self.dic_users = json.load(fich)
                 self.expired()
-        except:
+        except (NameError, FileNotFoundError):
             pass
 
     def register2json(self):
