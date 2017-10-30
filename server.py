@@ -10,7 +10,7 @@ import sys
 import time
 from time import gmtime, strftime
 
-if len(sys.argv) < 2:
+if len(sys.argv) != 2:
     sys.exit("Usage: python3 server.py puerto")
 PORT = int(sys.argv[1])
 
@@ -22,14 +22,35 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
     dic = {}
 
     def json2registered(self):
+        """
+        method to view clients of json file
+        """
         try:
             with open('registered.json', 'r') as fich:
                 self.dic = json.load(fich)
+                self.expired()
         except:
             pass
 
     def register2json(self):
+        """
+        method to save the users in the json file
+        """
+        self.expired()
         json.dump(self.dic, open('registered.json', "w"))
+
+    def expired(self):
+        """
+        method to check expiration of users
+        """
+        expired_users = []
+        current_hour = time.strftime('%Y-%m-%d %H:%M:%S',
+                                     time.gmtime(time.time()))
+        for user in self.dic:
+            if self.dic[user][1] < current_hour:
+                expired_users.append(user)
+        for user in expired_users:
+            del self.dic[user]
 
     def handle(self):
         """
@@ -37,23 +58,24 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         (all requests will be handled by this method)
         """
         self.json2registered()
+        self.expired()
         for line in self.rfile:
             message = line.decode('utf-8').split()
             if message:
                 if message[0] == 'REGISTER':
                     user = message[1][4:]
-                    info = self.client_address[0]
+                    ip_address = self.client_address[0]
                 if message[0] == 'Expires:':
                     if message[1] != '0':
                         Expire = time.strftime('%Y-%m-%d %H:%M:%S',
                                                time.gmtime(time.time() +
                                                            int(message[1])))
-                        self.dic[user] = [info, Expire]
+                        self.dic[user] = [ip_address, Expire]
                         self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                     elif message[1] == '0':
                         try:
-                            self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                             del self.dic[user]
+                            self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                         except KeyError:
                             self.wfile.write(b'SIP/2.0 404 User'
                                              b'Not Found\r\n\r\n')
