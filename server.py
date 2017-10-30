@@ -19,7 +19,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
     """
     Echo server class
     """
-    dic = {}
+    dic_users = {}
 
     def json2registered(self):
         """
@@ -27,7 +27,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         """
         try:
             with open('registered.json', 'r') as fich:
-                self.dic = json.load(fich)
+                self.dic_users = json.load(fich)
                 self.expired()
         except:
             pass
@@ -37,7 +37,7 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         method to save the users in the json file
         """
         self.expired()
-        json.dump(self.dic, open('registered.json', "w"))
+        json.dump(self.dic_users, open('registered.json', "w"))
 
     def expired(self):
         """
@@ -46,11 +46,11 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         expired_users = []
         current_hour = time.strftime('%Y-%m-%d %H:%M:%S',
                                      time.gmtime(time.time()))
-        for user in self.dic:
-            if self.dic[user][1] < current_hour:
+        for user in self.dic_users:
+            if self.dic_users[user][1] < current_hour:
                 expired_users.append(user)
         for user in expired_users:
-            del self.dic[user]
+            del self.dic_users[user]
 
     def handle(self):
         """
@@ -61,26 +61,26 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         self.expired()
         for line in self.rfile:
             message = line.decode('utf-8').split()
-            if message:
-                if message[0] == 'REGISTER':
-                    user = message[1][4:]
-                    ip_address = self.client_address[0]
-                if message[0] == 'Expires:':
-                    if message[1] != '0':
-                        Expire = time.strftime('%Y-%m-%d %H:%M:%S',
-                                               time.gmtime(time.time() +
-                                                           int(message[1])))
-                        self.dic[user] = [ip_address, Expire]
+            if message and message[0] == 'REGISTER':
+                user = message[1][4:]
+                ip_address = self.client_address[0]
+            if message and message[0] == 'Expires:':
+                if message[1] != '0':
+                    Expire = time.strftime('%Y-%m-%d %H:%M:%S',
+                                           time.gmtime(time.time() +
+                                                       int(message[1])))
+                    self.dic_users[user] = ['address: ' + ip_address,
+                                      'expires: ' +  Expire]
+                    self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
+                elif message[1] == '0':
+                    try:
+                        del self.dic_users[user]
                         self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-                    elif message[1] == '0':
-                        try:
-                            del self.dic[user]
-                            self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-                        except KeyError:
-                            self.wfile.write(b'SIP/2.0 404 User'
-                                             b'Not Found\r\n\r\n')
+                    except KeyError:
+                        self.wfile.write(b'SIP/2.0 404 User'
+                                         b'Not Found\r\n\r\n')
             print(line.decode('utf-8'), end='')
-        print(self.dic)
+        print(self.dic_users)
         self.register2json()
 
 if __name__ == "__main__":
