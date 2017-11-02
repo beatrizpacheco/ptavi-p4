@@ -9,7 +9,7 @@ import sys
 
 # Constantes. Dirección IP del servidor y contenido a enviar
 if len(sys.argv) < 6:
-    sys.exit('Usage: python3 client.py ip puerto'
+    sys.exit('Usage: python3 client.py ip puerto '
              'register sip_address expires_value')
 
 SERVER = sys.argv[1]

@@ -57,7 +57,6 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
         (all requests will be handled by this method)
         """
         self.json2registered()
-        self.expired()
         for line in self.rfile:
             message = line.decode('utf-8').split()
             if message and message[0] == 'REGISTER':
