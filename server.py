@@ -8,7 +8,6 @@ import json
 import socketserver
 import sys
 import time
-#from time import gmtime, strftime
 
 if len(sys.argv) != 2:
     sys.exit("Usage: python3 server.py puerto")
@@ -69,15 +68,14 @@ class SIPRegisterHandler(socketserver.DatagramRequestHandler):
                     expire = time.strftime('%Y-%m-%d %H:%M:%S',
                                            time.gmtime(time.time() +
                                                        int(message[1])))
-                    self.dic_users[user] = ['address: ' + ip_address,
-                                      'expires: ' +  expire]
+                    self.dic_users[user] = [ip_address, expire]
                     self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                 elif message[1] == '0':
                     try:
                         del self.dic_users[user]
                         self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                     except KeyError:
-                        self.wfile.write(b'SIP/2.0 404 User'
+                        self.wfile.write(b'SIP/2.0 404 User '
                                          b'Not Found\r\n\r\n')
             print(line.decode('utf-8'), end='')
         print(self.dic_users)
